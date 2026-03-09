@@ -1,8 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 
-// ══════════════════════════════════════════════
-// 🔊 8bit 효과음 엔진
-// ══════════════════════════════════════════════
 function useSounds() {
   const ctxRef = useRef(null);
   function ctx() {
@@ -47,9 +44,6 @@ function useSounds() {
   };
 }
 
-// ══════════════════════════════════════════════
-// ⚙️ 설정 & 상수
-// ══════════════════════════════════════════════
 const DIFF = {
   easy:   { label:"쉬움",   emoji:"🟢", cols:4, pairs:8,  delay:1000, color:"#34d399", desc:"8쌍 · 1초 기억" },
   normal: { label:"보통",   emoji:"🟡", cols:4, pairs:10, delay:700,  color:"#fbbf24", desc:"10쌍 · 0.7초" },
@@ -65,30 +59,21 @@ function fmt(s) {
   return `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
 }
 
-// ══════════════════════════════════════════════
-// 🎮 메인 앱
-// ══════════════════════════════════════════════
 export default function App() {
   const [screen, setScreen]     = useState("setup");
   const [nick, setNick]         = useState("");
   const [nickIn, setNickIn]     = useState("");
   const [diff, setDiff]         = useState("easy");
   const [muted, setMuted]       = useState(false);
-
-  // 게임 상태
   const [cards, setCards]       = useState([]);
   const [flipped, setFlipped]   = useState([]);
   const [matched, setMatched]   = useState([]);
   const [moves, setMoves]       = useState(0);
   const [won, setWon]           = useState(false);
   const [shake, setShake]       = useState([]);
-
-  // 타이머
   const [time, setTime]         = useState(0);
   const [running, setRunning]   = useState(false);
   const timerRef                = useRef(null);
-
-  // 리더보드
   const [lb, setLb]             = useState([]);
   const [lbLoading, setLbLoad]  = useState(false);
   const [lbDiff, setLbDiff]     = useState("easy");
@@ -96,7 +81,6 @@ export default function App() {
   const sfx = useSounds();
   const play = name => { if (!muted) sfx[name](); };
 
-  // ── 리더보드 ────────────────────────────────
   async function loadLb(d = lbDiff) {
     setLbLoad(true);
     try {
@@ -114,7 +98,6 @@ export default function App() {
     try { await window.storage.set(`lb:${diff}:${nick}_${Date.now()}`, JSON.stringify(e), true); } catch {}
   }
 
-  // ── 게임 초기화 ─────────────────────────────
   function initGame(d = diff) {
     clearInterval(timerRef.current);
     const emojis = shuffle(ALL_EMOJIS).slice(0, DIFF[d].pairs);
@@ -132,7 +115,6 @@ export default function App() {
     return ()=>clearInterval(timerRef.current);
   }, [running]);
 
-  // ── 카드 클릭 ───────────────────────────────
   async function handleFlip(card) {
     if (!running && !won) setRunning(true);
     if (flipped.length===2||flipped.find(c=>c.id===card.id)||matched.includes(card.val)) return;
@@ -162,13 +144,9 @@ export default function App() {
   const cfg = DIFF[diff];
   const tColor = time<30?"#34d399":time<60?"#fbbf24":"#f87171";
 
-  // ════════════════════════════════════════════
-  // 📱 화면 1: 설정
-  // ════════════════════════════════════════════
   if (screen==="setup") return (
     <Wrap>
       <div style={{ textAlign:"center", maxWidth:380, width:"100%", animation:"fadeUp .5s ease" }}>
-        {/* 로고 */}
         <div style={{ position:"relative", display:"inline-block", marginBottom:8 }}>
           <div style={{ fontSize:"4rem", filter:"drop-shadow(0 0 24px #ff6ef7)" }}>🃏</div>
           <div style={{ position:"absolute", top:-4, right:-4, width:14, height:14,
@@ -181,26 +159,18 @@ export default function App() {
         <p style={{ color:"#a78bfa", ...N, fontSize:".9rem", marginBottom:28 }}>
           카드를 뒤집어 같은 쌍을 모두 찾아보세요!
         </p>
-
-        {/* 닉네임 */}
         <div style={{ position:"relative", marginBottom:20 }}>
-          <span style={{ position:"absolute", left:14, top:"50%", transform:"translateY(-50%)",
-            fontSize:"1.1rem" }}>👤</span>
+          <span style={{ position:"absolute", left:14, top:"50%", transform:"translateY(-50%)", fontSize:"1.1rem" }}>👤</span>
           <input value={nickIn} onChange={e=>setNickIn(e.target.value)}
             onKeyDown={e=>{ if(e.key==="Enter"&&nickIn.trim()){ setNick(nickIn.trim()); setScreen("game"); }}}
             placeholder="닉네임을 입력하세요" maxLength={12}
             style={{ width:"100%", padding:"13px 16px 13px 40px", borderRadius:14,
               background:"rgba(255,255,255,.08)", border:"2px solid rgba(167,139,250,.35)",
               color:"#fff", fontSize:"1rem", ...N, outline:"none",
-              boxSizing:"border-box", backdropFilter:"blur(12px)",
-              transition:"border-color .2s" }}
+              boxSizing:"border-box", backdropFilter:"blur(12px)" }}
           />
         </div>
-
-        {/* 난이도 */}
-        <p style={{ color:"#7c6fa0", ...N, fontSize:".8rem", marginBottom:10, textAlign:"left", letterSpacing:.5 }}>
-          ▸ 난이도 선택
-        </p>
+        <p style={{ color:"#7c6fa0", ...N, fontSize:".8rem", marginBottom:10, textAlign:"left" }}>▸ 난이도 선택</p>
         <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:22 }}>
           {Object.entries(DIFF).map(([key,d])=>(
             <div key={key} onClick={()=>setDiff(key)} style={{
@@ -226,7 +196,6 @@ export default function App() {
             </div>
           ))}
         </div>
-
         <button onClick={()=>{ if(nickIn.trim()){ setNick(nickIn.trim()); setScreen("game"); }}}
           disabled={!nickIn.trim()}
           style={{ ...BtnPrimary, width:"100%", marginBottom:10,
@@ -243,35 +212,24 @@ export default function App() {
     </Wrap>
   );
 
-  // ════════════════════════════════════════════
-  // 📱 화면 2: 게임
-  // ════════════════════════════════════════════
   if (screen==="game") return (
     <Wrap>
-      {/* 탑바 */}
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center",
         width:"100%", maxWidth:460, marginBottom:10 }}>
         <button onClick={()=>setScreen("setup")} style={BtnMini}>← 나가기</button>
         <div style={{ display:"flex", gap:6, alignItems:"center" }}>
           <span style={{ color:cfg.color, ...N, fontSize:".8rem",
             background:`${cfg.color}15`, padding:"4px 12px", borderRadius:20,
-            border:`1px solid ${cfg.color}40` }}>
-            {cfg.emoji} {cfg.label}
-          </span>
+            border:`1px solid ${cfg.color}40` }}>{cfg.emoji} {cfg.label}</span>
           <button onClick={()=>setMuted(m=>!m)} style={{ ...BtnMini, padding:"5px 10px", fontSize:"1rem" }}>
             {muted?"🔇":"🔊"}
           </button>
         </div>
         <button onClick={()=>{ setLbDiff(diff); setScreen("leaderboard"); }} style={BtnMini}>🏆 순위</button>
       </div>
-
       <h1 style={{ color:"#fff", fontSize:"clamp(1.6rem,5vw,2.6rem)", margin:"0 0 2px",
         textShadow:"0 0 30px #ff6ef7", ...F }}>🃏 기억력 게임</h1>
-      <p style={{ color:"#6d5f8a", ...N, fontSize:".8rem", margin:"0 0 16px" }}>
-        👤 {nick}
-      </p>
-
-      {/* 스탯 */}
+      <p style={{ color:"#6d5f8a", ...N, fontSize:".8rem", margin:"0 0 16px" }}>👤 {nick}</p>
       <div style={{ display:"flex", gap:8, marginBottom:18, flexWrap:"wrap", justifyContent:"center" }}>
         {[
           {label:"⏱️ 시간", val:fmt(time), color:tColor},
@@ -286,8 +244,6 @@ export default function App() {
           </div>
         ))}
       </div>
-
-      {/* 카드 그리드 */}
       <div style={{ display:"grid", gridTemplateColumns:`repeat(${cfg.cols},1fr)`,
         gap:cfg.pairs>8?7:9, maxWidth:cfg.pairs>10?410:cfg.pairs>8?390:360 }}>
         {cards.map(card => {
@@ -301,17 +257,11 @@ export default function App() {
               <div style={{ width:"100%", height:"100%", position:"relative",
                 transformStyle:"preserve-3d", transition:"transform .38s cubic-bezier(.34,1.56,.64,1)",
                 transform:face?"rotateY(180deg)":"rotateY(0)" }}>
-                {/* 뒷면 */}
-                <div style={{ ...CF,
-                  background:"linear-gradient(145deg,#4c1d95,#1e40af)",
+                <div style={{ ...CF, background:"linear-gradient(145deg,#4c1d95,#1e40af)",
                   border:"1.5px solid rgba(167,139,250,.3)",
-                  boxShadow:"0 4px 16px rgba(109,40,217,.35)",
-                  fontSize:"1.3rem" }}>✨</div>
-                {/* 앞면 */}
+                  boxShadow:"0 4px 16px rgba(109,40,217,.35)", fontSize:"1.3rem" }}>✨</div>
                 <div style={{ ...CF, transform:"rotateY(180deg)",
-                  background:isMatch
-                    ?"linear-gradient(145deg,#064e3b,#065f46)"
-                    :"linear-gradient(145deg,#1e1b4b,#2e1065)",
+                  background:isMatch?"linear-gradient(145deg,#064e3b,#065f46)":"linear-gradient(145deg,#1e1b4b,#2e1065)",
                   border:`1.5px solid ${isMatch?"#10b981":"rgba(139,92,246,.4)"}`,
                   fontSize:cfg.pairs<=8?"2rem":"1.6rem",
                   boxShadow:isMatch?"0 0 18px #10b98166":"0 2px 10px rgba(0,0,0,.4)" }}>
@@ -322,53 +272,32 @@ export default function App() {
           );
         })}
       </div>
-
-      {/* 승리 배너 */}
       {won && (
         <div style={{ marginTop:24, textAlign:"center", animation:"fadeUp .5s ease",
           background:"rgba(251,191,36,.08)", border:"1px solid #fbbf2433",
           borderRadius:20, padding:"20px 32px" }}>
           <div style={{ fontSize:"2.8rem", marginBottom:4 }}>🎉</div>
           <p style={{ color:"#fde68a", fontSize:"1.3rem", margin:"0 0 4px", ...F,
-            textShadow:"0 0 20px #fbbf24" }}>
-            클리어! {fmt(time)} · {moves}번 시도
-          </p>
-          <p style={{ color:"#92400e", ...N, fontSize:".8rem", margin:"0 0 14px" }}>
-            {cfg.emoji} {cfg.label} 난이도
-          </p>
+            textShadow:"0 0 20px #fbbf24" }}>클리어! {fmt(time)} · {moves}번 시도</p>
+          <p style={{ color:"#92400e", ...N, fontSize:".8rem", margin:"0 0 14px" }}>{cfg.emoji} {cfg.label} 난이도</p>
           <div style={{ display:"flex", gap:8, justifyContent:"center" }}>
-            <button onClick={()=>{ setLbDiff(diff); setScreen("leaderboard"); }} style={BtnPrimary}>
-              🏆 리더보드
-            </button>
+            <button onClick={()=>{ setLbDiff(diff); setScreen("leaderboard"); }} style={BtnPrimary}>🏆 리더보드</button>
             <button onClick={()=>initGame(diff)} style={BtnGhost}>🔄 재도전</button>
           </div>
         </div>
       )}
-
-      {!won && (
-        <button onClick={()=>initGame(diff)} style={{ ...BtnGhost, marginTop:16 }}>🔄 다시 하기</button>
-      )}
+      {!won && <button onClick={()=>initGame(diff)} style={{ ...BtnGhost, marginTop:16 }}>🔄 다시 하기</button>}
       <CSS/>
     </Wrap>
   );
 
-  // ════════════════════════════════════════════
-  // 📱 화면 3: 리더보드
-  // ════════════════════════════════════════════
   return (
     <Wrap>
       <div style={{ width:"100%", maxWidth:460, animation:"fadeUp .4s ease" }}>
-        <button onClick={()=>setScreen(nick?"game":"setup")} style={{ ...BtnMini, marginBottom:16 }}>
-          ← 돌아가기
-        </button>
-
+        <button onClick={()=>setScreen(nick?"game":"setup")} style={{ ...BtnMini, marginBottom:16 }}>← 돌아가기</button>
         <h1 style={{ color:"#fff", fontSize:"2.2rem", margin:"0 0 4px", ...F,
           textShadow:"0 0 30px #fbbf24", textAlign:"center" }}>🏆 리더보드</h1>
-        <p style={{ color:"#5b5278", ...N, fontSize:".8rem", textAlign:"center", marginBottom:16 }}>
-          전체 TOP 10 · 난이도별 기록
-        </p>
-
-        {/* 난이도 탭 */}
+        <p style={{ color:"#5b5278", ...N, fontSize:".8rem", textAlign:"center", marginBottom:16 }}>전체 TOP 10 · 난이도별 기록</p>
         <div style={{ display:"flex", gap:6, marginBottom:20, justifyContent:"center" }}>
           {Object.entries(DIFF).map(([key,d])=>(
             <button key={key} onClick={()=>{ setLbDiff(key); }}
@@ -381,7 +310,6 @@ export default function App() {
             </button>
           ))}
         </div>
-
         {lbLoading ? (
           <div style={{ color:"#5b5278", textAlign:"center", ...N, padding:48,
             background:"rgba(255,255,255,.04)", borderRadius:20 }}>
@@ -397,7 +325,6 @@ export default function App() {
           <div style={{ display:"flex", flexDirection:"column", gap:7 }}>
             {lb.map((e,i)=>{
               const isMe = e.nickname===nick;
-              const dc = DIFF[lbDiff].color;
               return (
                 <div key={i} style={{
                   display:"flex", alignItems:"center", gap:12,
@@ -407,8 +334,7 @@ export default function App() {
                   animation:`fadeUp .35s ease ${i*.06}s both`,
                   boxShadow:isMe?"0 0 18px rgba(251,191,36,.12)":"none",
                 }}>
-                  <div style={{ fontSize:i<3?"1.7rem":"1rem", minWidth:34,
-                    textAlign:"center", ...F,
+                  <div style={{ fontSize:i<3?"1.7rem":"1rem", minWidth:34, textAlign:"center", ...F,
                     color:i<3?"inherit":"#4b4366" }}>
                     {i<3?MEDAL[i]:`${i+1}`}
                   </div>
@@ -427,19 +353,13 @@ export default function App() {
             })}
           </div>
         )}
-
-        <button onClick={()=>setScreen("game")} style={{ ...BtnPrimary, width:"100%", marginTop:20 }}>
-          🎮 게임 하기
-        </button>
+        <button onClick={()=>setScreen("game")} style={{ ...BtnPrimary, width:"100%", marginTop:20 }}>🎮 게임 하기</button>
       </div>
       <CSS/>
     </Wrap>
   );
 }
 
-// ══════════════════════════════════════════════
-// 🎨 공통 스타일 & 컴포넌트
-// ══════════════════════════════════════════════
 const F = { fontFamily:"'Fredoka One',cursive" };
 const N = { fontFamily:"'Nunito',sans-serif" };
 
@@ -448,7 +368,6 @@ const Wrap = ({children}) => (
     background:"radial-gradient(ellipse at 20% 20%, #2d0a4e 0%, #0d1240 40%, #071a10 100%)",
     display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
     ...F, position:"relative", overflow:"hidden" }}>
-    {/* 별빛 배경 */}
     <div style={{ position:"fixed", inset:0, pointerEvents:"none", zIndex:0 }}>
       {[...Array(24)].map((_,i)=>(
         <div key={i} style={{ position:"absolute",
