@@ -107,8 +107,8 @@ export default function App() {
     setTime(0); setRunning(false);
   }
 
-  useEffect(()=>{ if(screen==="game") initGame(); }, [screen]);
-  useEffect(()=>{ if(screen==="leaderboard") loadLb(lbDiff); }, [screen, lbDiff]);
+  useEffect(()=>{ if(screen==="game") initGame(); }, [screen]); // eslint-disable-line
+useEffect(()=>{ if(screen==="leaderboard") loadLb(lbDiff); }, [screen, lbDiff]); // eslint-disable-line
   useEffect(()=>{
     if(running) timerRef.current = setInterval(()=>setTime(t=>t+1),1000);
     else clearInterval(timerRef.current);
