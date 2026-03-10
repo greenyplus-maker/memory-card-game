@@ -1,5 +1,22 @@
 import { useState, useEffect, useRef } from "react";
 
+const SUPABASE_URL = "https://vqjfmkbsrgvrnyrnwkul.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZxamZta2Jzcmd2cm55cm53a3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNzA5NDgsImV4cCI6MjA4ODY0Njk0OH0.eWrx_EqPE9M1TkScTrV-YFV-IVakPOocj6cYaDa7Veg";
+
+async function supabase(method, body) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/leaderboard`, {
+    method,
+    headers: {
+      "apikey": SUPABASE_KEY,
+      "Authorization": `Bearer ${SUPABASE_KEY}`,
+      "Content-Type": "application/json",
+      "Prefer": method === "POST" ? "return=minimal" : "",
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (method === "GET") return res.json();
+}
+
 function useSounds() {
   const ctxRef = useRef(null);
   function ctx() {
@@ -84,18 +101,24 @@ export default function App() {
   async function loadLb(d = lbDiff) {
     setLbLoad(true);
     try {
-      const res = await window.storage.list(`lb:${d}:`, true);
-      const rows = await Promise.all((res?.keys??[]).map(async k => {
-        try { const r = await window.storage.get(k,true); return r?JSON.parse(r.value):null; }
-        catch { return null; }
-      }));
-      setLb(rows.filter(Boolean).sort((a,b)=>a.time-b.time||a.moves-b.moves).slice(0,10));
+      const rows = await supabase("GET");
+      setLb(
+        rows
+          .filter(e => e.difficulty === d)
+          .sort((a,b) => a.time - b.time || a.moves - b.moves)
+          .slice(0, 10)
+      );
     } catch(e) {}
     setLbLoad(false);
   }
   async function saveLb(t, m) {
-    const e = { nickname:nick, time:t, moves:m, date:new Date().toLocaleDateString("ko-KR") };
-    try { await window.storage.set(`lb:${diff}:${nick}_${Date.now()}`, JSON.stringify(e), true); } catch {}
+    await supabase("POST", {
+      nickname: nick,
+      difficulty: diff,
+      time: t,
+      moves: m,
+      date: new Date().toLocaleDateString("ko-KR"),
+    });
   }
 
   function initGame(d = diff) {
