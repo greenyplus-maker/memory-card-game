@@ -93,10 +93,6 @@ const glassStrong = {
   boxShadow: "0 8px 40px rgba(100,110,130,.12), inset 0 1px 0 rgba(255,255,255,.9)",
 };
 
-// 프리텐다드 폰트
-const FM = { fontFamily:"'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif", fontWeight: 500 };
-const FN = { fontFamily:"'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif", fontWeight: 400 };
-
 export default function App() {
   const [screen, setScreen]     = useState("setup");
   const [nick, setNick]         = useState("");
