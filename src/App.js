@@ -62,9 +62,9 @@ function useSounds() {
 }
 
 const DIFF = {
-  easy:   { label:"쉬움",   emoji:"🟢", cols:4, pairs:8,  delay:1000, color:"#4ade80", desc:"8쌍 · 1초 기억" },
-  normal: { label:"보통",   emoji:"🟡", cols:4, pairs:10, delay:700,  color:"#fbbf24", desc:"10쌍 · 0.7초" },
-  hard:   { label:"어려움", emoji:"🔴", cols:4, pairs:12, delay:400,  color:"#f87171", desc:"12쌍 · 0.4초" },
+  easy:   { label:"쉬움",   emoji:"🟢", cols:4, pairs:8,  delay:1000, color:"#16a34a", desc:"8쌍 · 1초 기억" },
+  normal: { label:"보통",   emoji:"🟡", cols:4, pairs:10, delay:700,  color:"#d97706", desc:"10쌍 · 0.7초" },
+  hard:   { label:"어려움", emoji:"🔴", cols:4, pairs:12, delay:400,  color:"#dc2626", desc:"12쌍 · 0.4초" },
 };
 const ALL_EMOJIS = ["🐶","🐱","🦊","🐸","🦋","🌸","🍭","⭐","🎸","🍕","🚀","🦄"];
 const MEDAL = ["🥇","🥈","🥉"];
@@ -76,24 +76,27 @@ function fmt(s) {
   return `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
 }
 
-// 글라스 카드 공통 스타일
 const glass = {
-  background: "rgba(255,255,255,0.15)",
+  background: "rgba(255,255,255,0.75)",
   backdropFilter: "blur(16px)",
   WebkitBackdropFilter: "blur(16px)",
-  border: "1px solid rgba(255,255,255,0.3)",
+  border: "1px solid rgba(255,255,255,0.6)",
   borderRadius: 20,
-  boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+  boxShadow: "0 8px 32px rgba(100,110,130,.1), inset 0 1px 0 rgba(255,255,255,.8)",
 };
-
 const glassStrong = {
-  background: "rgba(255,255,255,0.22)",
+  background: "rgba(255,255,255,0.88)",
   backdropFilter: "blur(24px)",
   WebkitBackdropFilter: "blur(24px)",
-  border: "1px solid rgba(255,255,255,0.4)",
+  border: "1px solid rgba(255,255,255,0.7)",
   borderRadius: 24,
-  boxShadow: "0 8px 40px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.5)",
+  boxShadow: "0 8px 40px rgba(100,110,130,.12), inset 0 1px 0 rgba(255,255,255,.9)",
 };
+
+// 프리텐다드 폰트
+const F  = { fontFamily:"'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif", fontWeight: 700 };
+const FM = { fontFamily:"'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif", fontWeight: 500 };
+const FN = { fontFamily:"'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif", fontWeight: 400 };
 
 export default function App() {
   const [screen, setScreen]     = useState("setup");
@@ -121,20 +124,15 @@ export default function App() {
     setLbLoad(true);
     try {
       const rows = await supabaseApi("GET");
-      setLb(
-        rows.filter(e => e.difficulty === d)
-          .sort((a,b) => a.time - b.time || a.moves - b.moves)
-          .slice(0, 10)
-      );
+      setLb(rows.filter(e=>e.difficulty===d).sort((a,b)=>a.time-b.time||a.moves-b.moves).slice(0,10));
     } catch(e) {}
     setLbLoad(false);
   }
 
   async function saveLb(t, m) {
     await supabaseApi("POST", {
-      nickname: nick, difficulty: diff,
-      time: t, moves: m,
-      date: new Date().toLocaleDateString("ko-KR"),
+      nickname:nick, difficulty:diff, time:t, moves:m,
+      date:new Date().toLocaleDateString("ko-KR"),
     });
   }
 
@@ -184,58 +182,54 @@ export default function App() {
   const cfg = DIFF[diff];
   const tColor = time<30?"#16a34a":time<60?"#d97706":"#dc2626";
 
-  // ════════════════════════════════════════════════
+  // ════════════════════════════════════════════
   // 화면 1: 설정
-  // ════════════════════════════════════════════════
+  // ════════════════════════════════════════════
   if (screen==="setup") return (
     <Wrap>
       <div style={{ textAlign:"center", maxWidth:400, width:"100%", animation:"fadeUp .5s ease" }}>
-        <div style={{ fontSize:"4rem", marginBottom:8, filter:"drop-shadow(0 4px 16px rgba(99,102,241,.4))" }}>🃏</div>
-        <h1 style={{ fontSize:"2.8rem", margin:"0 0 6px", ...F,
-          background:"linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899)",
+        <div style={{ fontSize:"3.8rem", marginBottom:6, filter:"drop-shadow(0 4px 12px rgba(99,102,241,.2))" }}>🃏</div>
+        <h1 style={{ fontSize:"2.6rem", margin:"0 0 4px", ...F,
+          background:"linear-gradient(135deg, #374151, #1f2937, #4b5563)",
           WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>
           기억력 게임
         </h1>
-        <p style={{ color:"rgba(255,255,255,.7)", ...N, fontSize:".95rem", marginBottom:28 }}>
+        <p style={{ color:"#6b7280", ...FN, fontSize:".95rem", marginBottom:28 }}>
           카드를 뒤집어 같은 쌍을 모두 찾아보세요!
         </p>
 
-        {/* 닉네임 입력 */}
-        <div style={{ ...glassStrong, padding:"6px 16px", marginBottom:16,
-          display:"flex", alignItems:"center", gap:10 }}>
-          <span style={{ fontSize:"1.2rem" }}>👤</span>
+        <div style={{ ...glassStrong, display:"flex", alignItems:"center", gap:10,
+          padding:"6px 16px", marginBottom:16 }}>
+          <span style={{ fontSize:"1.1rem" }}>👤</span>
           <input value={nickIn} onChange={e=>setNickIn(e.target.value)}
             onKeyDown={e=>{ if(e.key==="Enter"&&nickIn.trim()){ setNick(nickIn.trim()); setScreen("game"); }}}
             placeholder="닉네임을 입력하세요" maxLength={12}
             style={{ flex:1, padding:"10px 4px", background:"transparent",
-              border:"none", color:"#fff", fontSize:"1rem", ...N, outline:"none" }}
+              border:"none", color:"#1f2937", fontSize:"1rem", ...FN, outline:"none" }}
           />
         </div>
 
-        {/* 난이도 선택 */}
-        <p style={{ color:"rgba(255,255,255,.5)", ...N, fontSize:".8rem",
-          marginBottom:10, textAlign:"left" }}>▸ 난이도 선택</p>
-        <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:24 }}>
+        <p style={{ color:"#9ca3af", ...FN, fontSize:".8rem", marginBottom:8, textAlign:"left" }}>▸ 난이도 선택</p>
+        <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:22 }}>
           {Object.entries(DIFF).map(([key,d])=>(
             <div key={key} onClick={()=>setDiff(key)} style={{
-              ...glass,
-              display:"flex", alignItems:"center", gap:14, padding:"14px 18px",
-              cursor:"pointer",
-              background: diff===key ? `rgba(255,255,255,0.28)` : "rgba(255,255,255,0.12)",
-              border: `1px solid ${diff===key ? "rgba(255,255,255,.6)" : "rgba(255,255,255,.2)"}`,
-              boxShadow: diff===key ? `0 8px 32px ${d.color}40, inset 0 1px 0 rgba(255,255,255,.5)` : "0 4px 16px rgba(0,0,0,.08)",
+              display:"flex", alignItems:"center", gap:14, padding:"13px 16px",
+              borderRadius:18, cursor:"pointer",
+              background: diff===key ? "rgba(255,255,255,.92)" : "rgba(255,255,255,.55)",
+              border: `1px solid ${diff===key?"rgba(200,205,215,.9)":"rgba(200,205,215,.4)"}`,
+              boxShadow: diff===key ? "0 4px 20px rgba(100,110,130,.1)" : "none",
               transition:"all .2s",
             }}>
-              <span style={{ fontSize:"1.6rem" }}>{d.emoji}</span>
+              <span style={{ fontSize:"1.5rem" }}>{d.emoji}</span>
               <div style={{ flex:1, textAlign:"left" }}>
-                <div style={{ color: diff===key ? d.color : "rgba(255,255,255,.9)", ...F, fontSize:"1rem" }}>{d.label}</div>
-                <div style={{ color:"rgba(255,255,255,.5)", ...N, fontSize:".75rem" }}>{d.desc}</div>
+                <div style={{ color:diff===key?d.color:"#4b5563", ...FM, fontSize:"1rem" }}>{d.label}</div>
+                <div style={{ color:"#9ca3af", ...FN, fontSize:".75rem", marginTop:1 }}>{d.desc}</div>
               </div>
               <div style={{ width:22, height:22, borderRadius:"50%",
-                background: diff===key ? d.color : "rgba(255,255,255,.2)",
+                background:diff===key?d.color:"rgba(200,205,215,.4)",
                 display:"flex", alignItems:"center", justifyContent:"center",
                 fontSize:".7rem", color:"#fff", transition:"all .2s" }}>
-                {diff===key && "✓"}
+                {diff===key&&"✓"}
               </div>
             </div>
           ))}
@@ -255,16 +249,16 @@ export default function App() {
     </Wrap>
   );
 
-  // ════════════════════════════════════════════════
+  // ════════════════════════════════════════════
   // 화면 2: 게임
-  // ════════════════════════════════════════════════
+  // ════════════════════════════════════════════
   if (screen==="game") return (
     <Wrap>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center",
         width:"100%", maxWidth:460, marginBottom:12 }}>
         <button onClick={()=>setScreen("setup")} style={BtnMini}>← 나가기</button>
-        <div style={{ display:"flex", gap:6 }}>
-          <span style={{ ...glass, color:cfg.color, ...N, fontSize:".82rem",
+        <div style={{ display:"flex", gap:6, alignItems:"center" }}>
+          <span style={{ ...glass, color:cfg.color, ...FN, fontSize:".82rem",
             padding:"5px 14px", borderRadius:20 }}>{cfg.emoji} {cfg.label}</span>
           <button onClick={()=>setMuted(m=>!m)} style={{ ...BtnMini, fontSize:"1rem" }}>
             {muted?"🔇":"🔊"}
@@ -274,15 +268,12 @@ export default function App() {
       </div>
 
       <h1 style={{ fontSize:"clamp(1.8rem,5vw,2.6rem)", margin:"0 0 4px", ...F,
-        background:"linear-gradient(135deg,#6366f1,#8b5cf6,#ec4899)",
+        background:"linear-gradient(135deg,#374151,#1f2937,#4b5563)",
         WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>
         🃏 기억력 게임
       </h1>
-      <p style={{ color:"rgba(255,255,255,.5)", ...N, fontSize:".82rem", margin:"0 0 18px" }}>
-        👤 {nick}
-      </p>
+      <p style={{ color:"#9ca3af", ...FN, fontSize:".82rem", margin:"0 0 18px" }}>👤 {nick}</p>
 
-      {/* 스탯 */}
       <div style={{ display:"flex", gap:10, marginBottom:20, flexWrap:"wrap", justifyContent:"center" }}>
         {[
           {label:"⏱️ 시간", val:fmt(time), color:tColor},
@@ -290,13 +281,12 @@ export default function App() {
           {label:"찾은 쌍", val:`${matched.length}/${cfg.pairs}`, color:"#8b5cf6"},
         ].map(({label,val,color})=>(
           <div key={label} style={{ ...glass, padding:"10px 22px", textAlign:"center", minWidth:85 }}>
-            <div style={{ fontSize:"1.4rem", color, ...F }}>{val}</div>
-            <div style={{ fontSize:".68rem", color:"rgba(255,255,255,.5)", ...N }}>{label}</div>
+            <div style={{ fontSize:"1.4rem", color, ...FM }}>{val}</div>
+            <div style={{ fontSize:".68rem", color:"#9ca3af", ...FN }}>{label}</div>
           </div>
         ))}
       </div>
 
-      {/* 카드 그리드 */}
       <div style={{ display:"grid", gridTemplateColumns:`repeat(${cfg.cols},1fr)`,
         gap:cfg.pairs>8?8:10, maxWidth:cfg.pairs>10?420:cfg.pairs>8?395:365 }}>
         {cards.map(card => {
@@ -310,23 +300,17 @@ export default function App() {
               <div style={{ width:"100%", height:"100%", position:"relative",
                 transformStyle:"preserve-3d", transition:"transform .4s cubic-bezier(.34,1.56,.64,1)",
                 transform:face?"rotateY(180deg)":"rotateY(0)" }}>
-                {/* 뒷면 - 글라스 */}
                 <div style={{ ...CF,
-                  background:"rgba(255,255,255,0.18)",
+                  background:"rgba(255,255,255,.75)",
                   backdropFilter:"blur(12px)", WebkitBackdropFilter:"blur(12px)",
-                  border:"1px solid rgba(255,255,255,0.35)",
-                  boxShadow:"0 4px 16px rgba(99,102,241,.2), inset 0 1px 0 rgba(255,255,255,.4)",
-                  borderRadius:16, fontSize:"1.4rem" }}>✨</div>
-                {/* 앞면 - 글라스 */}
-                <div style={{ ...CF, transform:"rotateY(180deg)", borderRadius:16,
-                  background: isMatch
-                    ? "rgba(74,222,128,0.25)"
-                    : "rgba(139,92,246,0.25)",
+                  border:"1px solid rgba(255,255,255,.6)",
+                  boxShadow:"0 4px 16px rgba(100,110,130,.1), inset 0 1px 0 rgba(255,255,255,.8)",
+                  borderRadius:14, fontSize:"1.3rem", color:"#9ca3af" }}>✨</div>
+                <div style={{ ...CF, transform:"rotateY(180deg)", borderRadius:14,
+                  background:isMatch?"rgba(74,222,128,.2)":"rgba(139,92,246,.15)",
                   backdropFilter:"blur(12px)", WebkitBackdropFilter:"blur(12px)",
-                  border:`1px solid ${isMatch?"rgba(74,222,128,.6)":"rgba(255,255,255,.3)"}`,
-                  boxShadow: isMatch
-                    ? "0 0 20px rgba(74,222,128,.3), inset 0 1px 0 rgba(255,255,255,.4)"
-                    : "0 4px 16px rgba(0,0,0,.1), inset 0 1px 0 rgba(255,255,255,.3)",
+                  border:`1px solid ${isMatch?"rgba(74,222,128,.5)":"rgba(139,92,246,.3)"}`,
+                  boxShadow:isMatch?"0 0 18px rgba(74,222,128,.2)":"0 4px 16px rgba(100,110,130,.08)",
                   fontSize:cfg.pairs<=8?"2rem":"1.6rem" }}>
                   {card.val}
                 </div>
@@ -336,18 +320,16 @@ export default function App() {
         })}
       </div>
 
-      {/* 승리 배너 */}
       {won && (
         <div style={{ ...glassStrong, marginTop:24, textAlign:"center",
-          padding:"24px 36px", animation:"fadeUp .5s ease",
-          background:"rgba(255,255,255,.2)" }}>
+          padding:"24px 36px", animation:"fadeUp .5s ease" }}>
           <div style={{ fontSize:"2.8rem", marginBottom:6 }}>🎉</div>
           <p style={{ fontSize:"1.3rem", margin:"0 0 4px", ...F,
-            background:"linear-gradient(135deg,#fbbf24,#f59e0b)",
+            background:"linear-gradient(135deg,#d97706,#92400e)",
             WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>
             클리어! {fmt(time)} · {moves}번 시도
           </p>
-          <p style={{ color:"rgba(255,255,255,.6)", ...N, fontSize:".82rem", margin:"0 0 16px" }}>
+          <p style={{ color:"#9ca3af", ...FN, fontSize:".82rem", margin:"0 0 16px" }}>
             {cfg.emoji} {cfg.label} 난이도
           </p>
           <div style={{ display:"flex", gap:8, justifyContent:"center" }}>
@@ -361,9 +343,9 @@ export default function App() {
     </Wrap>
   );
 
-  // ════════════════════════════════════════════════
+  // ════════════════════════════════════════════
   // 화면 3: 리더보드
-  // ════════════════════════════════════════════════
+  // ════════════════════════════════════════════
   return (
     <Wrap>
       <div style={{ width:"100%", maxWidth:460, animation:"fadeUp .4s ease" }}>
@@ -371,42 +353,40 @@ export default function App() {
           ← 돌아가기
         </button>
         <h1 style={{ fontSize:"2.2rem", margin:"0 0 4px", ...F, textAlign:"center",
-          background:"linear-gradient(135deg,#fbbf24,#f59e0b)",
+          background:"linear-gradient(135deg,#d97706,#92400e)",
           WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>
           🏆 리더보드
         </h1>
-        <p style={{ color:"rgba(255,255,255,.5)", ...N, fontSize:".82rem",
-          textAlign:"center", marginBottom:16 }}>전체 TOP 10 · 난이도별 기록</p>
+        <p style={{ color:"#9ca3af", ...FN, fontSize:".82rem", textAlign:"center", marginBottom:16 }}>
+          전체 TOP 10 · 난이도별 기록
+        </p>
 
-        {/* 난이도 탭 */}
         <div style={{ display:"flex", gap:8, marginBottom:20, justifyContent:"center" }}>
           {Object.entries(DIFF).map(([key,d])=>(
             <button key={key} onClick={()=>setLbDiff(key)}
-              style={{ padding:"8px 18px", borderRadius:20, cursor:"pointer",
-                ...F, fontSize:".85rem", transition:"all .2s",
-                background: lbDiff===key ? `rgba(255,255,255,.28)` : "rgba(255,255,255,.1)",
-                border: `1px solid ${lbDiff===key?"rgba(255,255,255,.6)":"rgba(255,255,255,.2)"}`,
-                color: lbDiff===key ? d.color : "rgba(255,255,255,.6)",
+              style={{ padding:"7px 16px", borderRadius:20, cursor:"pointer",
+                ...FM, fontSize:".85rem", transition:"all .2s",
+                background: lbDiff===key?"rgba(255,255,255,.95)":"rgba(255,255,255,.55)",
+                border:`1px solid ${lbDiff===key?"rgba(200,205,215,.9)":"rgba(200,205,215,.4)"}`,
+                color: lbDiff===key?d.color:"#6b7280",
                 backdropFilter:"blur(12px)", WebkitBackdropFilter:"blur(12px)",
-                boxShadow: lbDiff===key ? `0 4px 20px ${d.color}40` : "none" }}>
+                boxShadow: lbDiff===key?"0 4px 16px rgba(100,110,130,.12)":"none" }}>
               {d.emoji} {d.label}
             </button>
           ))}
         </div>
 
         {lbLoading ? (
-          <div style={{ ...glass, color:"rgba(255,255,255,.6)", textAlign:"center",
-            ...N, padding:48 }}>
+          <div style={{ ...glass, color:"#9ca3af", textAlign:"center", ...FN, padding:48 }}>
             <div style={{ fontSize:"2rem", marginBottom:8 }}>⏳</div>불러오는 중...
           </div>
         ) : lb.length===0 ? (
-          <div style={{ ...glass, color:"rgba(255,255,255,.6)", textAlign:"center",
-            ...N, padding:48 }}>
+          <div style={{ ...glass, color:"#9ca3af", textAlign:"center", ...FN, padding:48 }}>
             <div style={{ fontSize:"2.5rem", marginBottom:8 }}>🎯</div>
             아직 기록이 없어요!<br/>첫 번째 주인공이 되어보세요
           </div>
         ) : (
-          <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+          <div style={{ display:"flex", flexDirection:"column", gap:7 }}>
             {lb.map((e,i)=>{
               const isMe = e.nickname===nick;
               return (
@@ -414,23 +394,22 @@ export default function App() {
                   ...glass,
                   display:"flex", alignItems:"center", gap:12, padding:"13px 18px",
                   animation:`fadeUp .35s ease ${i*.06}s both`,
-                  background: isMe ? "rgba(251,191,36,.2)" : "rgba(255,255,255,.12)",
-                  border: `1px solid ${isMe?"rgba(251,191,36,.5)":"rgba(255,255,255,.2)"}`,
-                  boxShadow: isMe ? "0 4px 20px rgba(251,191,36,.2), inset 0 1px 0 rgba(255,255,255,.3)" : "0 4px 16px rgba(0,0,0,.08)",
+                  background:isMe?"rgba(251,191,36,.15)":"rgba(255,255,255,.72)",
+                  border:`1px solid ${isMe?"rgba(251,191,36,.4)":"rgba(200,205,215,.4)"}`,
+                  boxShadow:isMe?"0 4px 20px rgba(251,191,36,.15)":"0 4px 16px rgba(100,110,130,.08)",
                 }}>
-                  <div style={{ fontSize:i<3?"1.7rem":"1.1rem", minWidth:34,
-                    textAlign:"center", ...F }}>
+                  <div style={{ fontSize:i<3?"1.7rem":"1rem", minWidth:34, textAlign:"center", ...F }}>
                     {i<3?MEDAL[i]:`${i+1}`}
                   </div>
                   <div style={{ flex:1 }}>
-                    <div style={{ color: isMe?"#fbbf24":"rgba(255,255,255,.9)", ...F, fontSize:".95rem" }}>
-                      {e.nickname}{isMe&&<span style={{ fontSize:".72rem", marginLeft:6, opacity:.8 }}>← 나</span>}
+                    <div style={{ color:isMe?"#d97706":"#1f2937", ...FM, fontSize:".95rem" }}>
+                      {e.nickname}{isMe&&<span style={{ fontSize:".72rem", marginLeft:6, color:"#d97706" }}>← 나</span>}
                     </div>
-                    <div style={{ color:"rgba(255,255,255,.4)", ...N, fontSize:".7rem" }}>{e.date}</div>
+                    <div style={{ color:"#9ca3af", ...FN, fontSize:".7rem" }}>{e.date}</div>
                   </div>
                   <div style={{ textAlign:"right" }}>
-                    <div style={{ color:"#4ade80", ...F, fontSize:"1.1rem" }}>{fmt(e.time)}</div>
-                    <div style={{ color:"rgba(255,255,255,.4)", ...N, fontSize:".7rem" }}>{e.moves}번 시도</div>
+                    <div style={{ color:"#16a34a", ...FM, fontSize:"1.1rem" }}>{fmt(e.time)}</div>
+                    <div style={{ color:"#9ca3af", ...FN, fontSize:".7rem" }}>{e.moves}번 시도</div>
                   </div>
                 </div>
               );
@@ -446,58 +425,59 @@ export default function App() {
   );
 }
 
-// ══════════════════════════════════════════════
+// ════════════════════════════════════════════
 // 🎨 공통 스타일
-// ══════════════════════════════════════════════
-const F = { fontFamily:"'Fredoka One',cursive" };
-const N = { fontFamily:"'Nunito',sans-serif" };
+// ════════════════════════════════════════════
+const F  = { fontFamily:"'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif", fontWeight:700 };
+const FM = { fontFamily:"'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif", fontWeight:500 };
+const FN = { fontFamily:"'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif", fontWeight:400 };
 
 const Wrap = ({children}) => (
   <div style={{ minHeight:"100vh", padding:"20px",
-    background:"linear-gradient(135deg, #667eea 0%, #764ba2 30%, #f093fb 60%, #4facfe 100%)",
+    background:"linear-gradient(145deg, #f0f2f5 0%, #e8eaf0 40%, #dde1ea 70%, #f5f5f7 100%)",
     display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
-    ...F, position:"relative", overflow:"hidden" }}>
-    {/* 배경 블러 오브 */}
-    <div style={{ position:"fixed", width:400, height:400, borderRadius:"50%",
-      background:"rgba(255,255,255,.08)", top:-100, left:-100,
-      filter:"blur(60px)", pointerEvents:"none" }}/>
-    <div style={{ position:"fixed", width:300, height:300, borderRadius:"50%",
-      background:"rgba(255,255,255,.1)", bottom:-50, right:-50,
+    position:"relative", overflow:"hidden" }}>
+    <div style={{ position:"fixed", width:350, height:350, borderRadius:"50%",
+      background:"rgba(150,160,180,.1)", top:-80, left:-80,
       filter:"blur(50px)", pointerEvents:"none" }}/>
+    <div style={{ position:"fixed", width:250, height:250, borderRadius:"50%",
+      background:"rgba(180,185,200,.12)", bottom:-40, right:-40,
+      filter:"blur(40px)", pointerEvents:"none" }}/>
     <div style={{ position:"relative", zIndex:1, width:"100%",
       display:"flex", flexDirection:"column", alignItems:"center" }}>
-      <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700&display=swap" rel="stylesheet"/>
+      <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet"/>
       {children}
     </div>
   </div>
 );
 
 const CF = { position:"absolute", width:"100%", height:"100%",
-  backfaceVisibility:"hidden",
-  display:"flex", alignItems:"center", justifyContent:"center" };
+  backfaceVisibility:"hidden", display:"flex", alignItems:"center", justifyContent:"center" };
 
 const BtnPrimary = { padding:"12px 28px", borderRadius:50, cursor:"pointer",
   background:"linear-gradient(135deg,#6366f1,#8b5cf6)",
-  color:"#fff", border:"1px solid rgba(255,255,255,.3)", fontSize:"1rem", ...F,
-  boxShadow:"0 4px 20px rgba(99,102,241,.4), inset 0 1px 0 rgba(255,255,255,.3)",
-  backdropFilter:"blur(8px)", transition:"transform .15s, opacity .15s" };
+  color:"#fff", border:"1px solid rgba(255,255,255,.3)",
+  fontSize:"1rem", ...{ fontFamily:"'Pretendard',-apple-system,sans-serif", fontWeight:600 },
+  boxShadow:"0 4px 20px rgba(99,102,241,.3), inset 0 1px 0 rgba(255,255,255,.3)",
+  transition:"transform .15s, opacity .15s" };
 
 const BtnGlass = { padding:"11px 26px", borderRadius:50, cursor:"pointer",
-  background:"rgba(255,255,255,.18)", backdropFilter:"blur(12px)", WebkitBackdropFilter:"blur(12px)",
-  border:"1px solid rgba(255,255,255,.35)", color:"#fff", fontSize:".95rem", ...F,
-  boxShadow:"0 4px 16px rgba(0,0,0,.1), inset 0 1px 0 rgba(255,255,255,.4)",
+  background:"rgba(255,255,255,.8)", backdropFilter:"blur(12px)", WebkitBackdropFilter:"blur(12px)",
+  border:"1px solid rgba(200,205,215,.6)", color:"#374151",
+  fontSize:".95rem", ...{ fontFamily:"'Pretendard',-apple-system,sans-serif", fontWeight:500 },
+  boxShadow:"0 4px 16px rgba(100,110,130,.08), inset 0 1px 0 rgba(255,255,255,.8)",
   transition:"all .15s" };
 
 const BtnMini = { padding:"7px 16px", borderRadius:20, cursor:"pointer",
-  background:"rgba(255,255,255,.18)", backdropFilter:"blur(12px)", WebkitBackdropFilter:"blur(12px)",
-  border:"1px solid rgba(255,255,255,.3)", color:"rgba(255,255,255,.9)",
-  fontSize:".82rem", ...N,
-  boxShadow:"inset 0 1px 0 rgba(255,255,255,.3)" };
+  background:"rgba(255,255,255,.8)", backdropFilter:"blur(12px)", WebkitBackdropFilter:"blur(12px)",
+  border:"1px solid rgba(200,205,215,.5)", color:"#4b5563",
+  fontSize:".82rem", ...{ fontFamily:"'Pretendard',-apple-system,sans-serif", fontWeight:400 },
+  boxShadow:"inset 0 1px 0 rgba(255,255,255,.7)" };
 
 const CSS = () => <style>{`
   @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
   @keyframes pop{0%{transform:scale(1)}45%{transform:scale(1.2)}100%{transform:scale(1)}}
   @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-  input::placeholder{color:rgba(255,255,255,.4)}
-  button:hover{transform:scale(1.04)!important;opacity:.95}
+  input::placeholder{color:#9ca3af}
+  button:hover{transform:scale(1.04)!important;opacity:.92}
 `}</style>;
