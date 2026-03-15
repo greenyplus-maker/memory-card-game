@@ -94,7 +94,6 @@ const glassStrong = {
 };
 
 // 프리텐다드 폰트
-const F  = { fontFamily:"'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif", fontWeight: 700 };
 const FM = { fontFamily:"'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif", fontWeight: 500 };
 const FN = { fontFamily:"'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif", fontWeight: 400 };
 
